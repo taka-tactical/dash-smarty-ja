@@ -100,7 +100,8 @@ if ($seek) {
 		if (empty($name)) continue;
 
 		// set types
-		$str = explode('.', $href);
+		$str   = explode('.', $href);
+		$class = '';
 
 		if ($str[0] == 'variable') {
 			// Smarty class property
@@ -142,10 +143,8 @@ if ($seek) {
 				break;
 			}
 		}
-		else {
-			$class = 'Guide';
-		}
 
+		if (!$class) $class = 'Guide';
 		$db->query("INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('{$name}', '{$class}', '{$href}')");
 	}
 }
