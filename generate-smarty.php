@@ -137,7 +137,7 @@ if ($seek) {
 					$class = $val['type'];
 				}
 				else {
-					$class = $value;
+					$class = $val;
 				}
 				break;
 			}
