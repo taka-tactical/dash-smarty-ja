@@ -1,0 +1,34 @@
+body {
+	background-color: #f2f2f2;
+	font-family: Helvetica, Arial, sans-serif;
+	color: #333;
+}
+
+a:link {
+	text-decoration: underline;
+	color: #00759f;
+}
+
+a:visited {
+	text-decoration: underline;
+	color: rgb(1,90,132);
+}
+
+div.titlepage {
+	font-size: 12px;
+}
+
+pre.programlisting,
+pre.screen,
+code.varname {
+	font-family: "Courier New", Courier, fixed, monospace;
+}
+
+pre.programlisting,
+pre.screen {
+	background: #fff;
+	color: #000;
+	box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+	border-radius: 0 0 2px 2px;
+	padding: 0 0.75rem;
+}
