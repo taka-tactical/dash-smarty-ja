@@ -1,28 +1,62 @@
 <?php
+/**
+dash-smarty-ja
+
+Copyright (c) 2014 T.Takamatsu <takamatsu@tactical.jp>
+
+This software is released under the MIT License.
+http://opensource.org/licenses/mit-license.php
+*/
+
+
+//----------------------------------------
+// Config
+//----------------------------------------
 
 $lang = !empty($argv[1]) ? $argv[1] : 'ja'; // default is ja
 $ver  = '3.1';
 
-$type = array(
-	'bc'		=> array('bc.html#bc.class'	=> 'Class'),
-	'language'	=> array(
+$type = [
+	'bc'		=> [
+		'bc.html#bc.class'					=> 'Class'
+	],
+	'language'	=> [
 		'language.variables.smarty.html#'	=> 'Variable',
 		'language.modifier.'				=> 'Modifier',
 		'language.modifiers.html#'			=> 'Modifier',
 		'language.function.'				=> 'Function',
 		'language.builtin.functions.html#'	=> 'Function',
 		'language.custom.functions.html#'	=> 'Function',
-	),
-	'smarty'	=> array(
+	],
+	'smarty'	=> [
 		'smarty.constants.html#'			=> 'Constant',
-	),
-);
+	],
+];
 
 
-exec('rm -rf Smarty.docset/Contents/Resources/');
-exec('mkdir -p Smarty.docset/Contents/Resources/');
-exec('mv ' . __DIR__ . "/documentation/manual-{$lang} " . __DIR__ . '/Smarty.docset/Contents/Resources/Documents/');
+//----------------------------------------
+//
+// Main process
+//
+//----------------------------------------
 
+echo "\nStart build Smarty docset ...\n";
+
+try {
+	exec_ex('rm -rf Smarty.docset/Contents/Resources/');
+
+	if (!mkdir('Smarty.docset/Contents/Resources/', 0777, true)) {
+		do_exception(__LINE__);
+	}
+	exec_ex('mv ' . __DIR__ . "/smarty-documentation/docs/manual-{$lang} " . __DIR__ . '/Smarty.docset/Contents/Resources/Documents/');
+}
+catch (Exception $e) {
+	throw new Exception("\nSmarty docset build failed.\nFix error and try again.\n\n", -1, $e);
+}
+finally {
+}
+
+// gen Info.plist
 file_put_contents(__DIR__ . '/Smarty.docset/Contents/Info.plist', <<<ENDE
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -56,7 +90,9 @@ $db->query('CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path)');
 $seek = false;
 
 foreach ($divList as $tag) {
-	if (strtolower($tag->getAttribute('class')) != 'list-of-examples') continue;
+	if (strtolower($tag->getAttribute('class')) != 'list-of-examples') {
+		continue;
+	}
 	$seek = $tag;
 	break;
 }
@@ -67,12 +103,19 @@ if ($seek) {
 	foreach ($tags as $tag) {
 		$href = $tag->getAttribute('href');
 		$str  = substr($href, 0, 6);
-		if ($str[0] == '.') continue;
-		if ($str == 'https:' || !strncmp($str, 'http:', 5)) continue;
 
-		$name = trim(preg_replace('#\s+#u', ' ', str_replace(array("\r\n", "\n", "\r"), '', $tag->nodeValue)));
-		if (empty($name)) continue;
+		if ($str[0] == '.') {
+			continue;
+		}
+		if ($str == 'https:' || !strncmp($str, 'http:', 5)) {
+			continue;
+		}
 
+		$name = trim(preg_replace('#\s+#u', ' ', str_replace(["\r\n", "\n", "\r"], '', $tag->nodeValue)));
+
+		if (empty($name)) {
+			continue;
+		}
 		$db->query("INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('{$name}', 'Sample', '{$href}')");
 	}
 }
@@ -81,7 +124,9 @@ if ($seek) {
 $seek = false;
 
 foreach ($divList as $tag) {
-	if (strtolower($tag->getAttribute('class')) != 'toc') continue;
+	if (strtolower($tag->getAttribute('class')) != 'toc') {
+		continue;
+	}
 	$seek = $tag;
 	break;
 }
@@ -92,12 +137,20 @@ if ($seek) {
 	foreach ($tags as $tag) {
 		$href = $tag->getAttribute('href');
 		$str  = substr($href, 0, 6);
-		if ($str[0] == '.') continue;
-		if ($str == 'https:' || !strncmp($str, 'http:', 5)) continue;
 
-		$name = str_replace(array("\r\n", "\n", "\r"), '', $tag->nodeValue);
+		if ($str[0] == '.') {
+			continue;
+		}
+		if ($str == 'https:' || !strncmp($str, 'http:', 5)) {
+			continue;
+		}
+
+		$name = str_replace(["\r\n", "\n", "\r"], '', $tag->nodeValue);
 		$name = trim(preg_replace('#\s+#u', ' ', preg_replace('#^[A-Z0-9-]+\.#u', '', $name)));
-		if (empty($name)) continue;
+
+		if (empty($name)) {
+			continue;
+		}
 
 		// set types
 		$str   = explode('.', $href);
@@ -105,7 +158,9 @@ if ($seek) {
 
 		if ($str[0] == 'variable') {
 			// Smarty class property
-			if ($name[0] == '$') $name = substr($name, 1);
+			if ($name[0] == '$') {
+				$name = substr($name, 1);
+			}
 			$name  = "Smarty::{$name}"; // override
 			$class = 'Property';
 		}
@@ -117,13 +172,17 @@ if ($seek) {
 			}
 			// Smarty class property
 			else if (!strncmp($href, 'api.variables.html#', 19)) {
-				if ($name[0] == '$') $name = substr($name, 1);
+				if ($name[0] == '$') {
+					$name = substr($name, 1);
+				}
 				$name  = "Smarty::{$name}"; // override
 				$class = 'Property';
 			}
 			// Smarty class method
 			else {
-				if (substr($name, -2) == '()') $name = substr($name, 0, -2);
+				if (substr($name, -2) == '()') {
+					$name = substr($name, 0, -2);
+				}
 				$name  = "Smarty::{$name}"; // override
 				$class = 'Method';
 			}
@@ -132,7 +191,10 @@ if ($seek) {
 			$str = $type[$str[0]];
 
 			foreach ($str as $key => $val) {
-				if (strncmp($href, $key, strlen($key))) continue;
+				if (strncmp($href, $key, strlen($key))) {
+					continue;
+				}
+
 				if (is_array($val)) {
 					$name  = $val['name']; // override
 					$class = $val['type'];
@@ -144,8 +206,40 @@ if ($seek) {
 			}
 		}
 
-		if (!$class) $class = 'Guide';
+		if (!$class) {
+			$class = 'Guide';
+		}
 		$db->query("INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('{$name}', '{$class}', '{$href}')");
 	}
 }
+
+echo "\nSmarty docset created !\n\n";
+
+
+//----------------------------------------
+// Helper functions
+//----------------------------------------
+
+// Throw Exception
+function do_exception($line, $code = -1) {
+	throw new Exception("Error at line: {$line}", $code);
+}
+
+// Exec with exception logic
+function exec_ex($cmd) {
+	if (($cmd = strval($cmd)) === '') {
+		do_exception(__LINE__);
+	}
+
+	$out = null;
+	$ret = 0;
+	exec($cmd, $out, $ret);
+
+	if ($ret) {
+		do_exception(__LINE__, $ret);
+	}
+
+	return true;
+}
+
 
