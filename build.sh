@@ -13,6 +13,7 @@ LANG=ja
 #FOP=/usr/local/bin/fop
 
 # Mac (Homebrew)
+export XML_CATALOG_FILES="/usr/local/etc/xml/catalog"
 STYLESHEETS_DIR=/usr/local/share/docbook-xsl
 XMLTO=/usr/local/bin/xmlto
 FOP=/usr/local/opt/fop/bin/fop
